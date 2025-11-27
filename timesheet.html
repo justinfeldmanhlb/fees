@@ -2,90 +2,29 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Flexible Timesheet</title>
+<title>Flexible Timesheet with Timer</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin:0; padding:0;
-    display:flex;
-    height:100vh;
-    background:#eef3f7;
-  }
-
-  /* LEFT PANEL */
-  .left-panel {
-    width: 260px;
-    background:#fff;
-    border-right:1px solid #ccc;
-    padding:10px;
-  }
-  .task {
-    background:#ffe58a;
-    border:1px solid #d4b200;
-    padding:8px;
-    margin-bottom:8px;
-    border-radius:4px;
-    cursor:grab;
-  }
-  .task.dragging { opacity:0.6; }
-
-  /* RIGHT PANEL GRID */
-  .right-panel {
-    flex:1;
-    position:relative;
-    background:#cce5ff;
-    overflow:auto;
-    padding:20px;
-  }
-
-  .time-labels {
-    position:absolute;
-    left:0; top:0; width:60px;
-  }
-  .time-label {
-    height:40px;
-    line-height:40px;
-    text-align:right;
-    padding-right:10px;
-    font-size:12px;
-    color:#333;
-    border-bottom:1px solid #aaa;
-  }
-
-  .day-columns {
-    margin-left:60px;
-    display:grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap:2px;
-  }
-
-  .day-column {
-    position:relative;
-    background:#f0f8ff;
-    border:1px solid #bbb;
-    min-height:400px;
-  }
-
-  .task-block {
-    position:absolute;
-    background:#9ecbff;
-    border:1px solid #006dce;
-    border-radius:4px;
-    padding:2px 4px;
-    font-size:12px;
-    cursor:move;
-    box-sizing:border-box;
-  }
-
-  .task-block.resizing {
-    cursor:n-resize;
-  }
+body{margin:0;padding:0;font-family:Arial;display:flex;height:100vh;background:#eef3f7;}
+.left-panel{width:260px;background:#fff;border-right:1px solid #ccc;padding:10px;display:flex;flex-direction:column;}
+.left-panel input{padding:6px;margin-bottom:8px;}
+.task{background:#ffe58a;border:1px solid #d4b200;padding:8px;margin-bottom:8px;border-radius:4px;cursor:grab;}
+.task.dragging{opacity:0.6;}
+.right-panel{flex:1;position:relative;background:#cce5ff;overflow:auto;padding:20px;}
+.time-labels{position:absolute;left:0;top:0;width:60px;}
+.time-label{height:40px;line-height:40px;text-align:right;padding-right:10px;font-size:12px;color:#333;border-bottom:1px solid #aaa;}
+.day-columns{margin-left:60px;display:grid;grid-template-columns: repeat(5,1fr);gap:2px;}
+.day-column{position:relative;background:#f0f8ff;border:1px solid #bbb;min-height:400px;}
+.task-block{position:absolute;background:#9ecbff;border:1px solid #006dce;border-radius:4px;padding:2px 4px;font-size:12px;cursor:move;box-sizing:border-box;}
+.task-block.resizing{cursor:n-resize;}
+#timer-container{position:absolute;bottom:10px;left:10px;background:#fff8c4;padding:8px;border:1px solid #d4b200;border-radius:4px;}
+#timer-container button{margin-left:4px;}
 </style>
 </head>
 <body>
 
 <div class="left-panel">
   <h3>Tasks</h3>
+  <input type="text" id="new-task" placeholder="New Task + Enter"/>
   <div class="task" draggable="true">Emails – 20 min</div>
   <div class="task" draggable="true">Tax Work – 45 min</div>
   <div class="task" draggable="true">Client Call – 30 min</div>
@@ -94,94 +33,64 @@
 <div class="right-panel">
   <div class="time-labels" id="time-labels"></div>
   <div class="day-columns" id="day-columns"></div>
+  <div id="timer-container">
+    <span id="timer">00:00</span>
+    <button id="start-stop">Start</button>
+    <button id="reset">Reset</button>
+  </div>
 </div>
 
 <script>
-/* ====== GENERATE GRID ====== */
-const startHour = 8;
-const endHour = 17;
-const timeLabels = document.getElementById("time-labels");
-for(let h=startHour; h<=endHour; h++){
-  const label = document.createElement("div");
-  label.className="time-label";
-  label.textContent = `${h.toString().padStart(2,'0')}:00`;
-  timeLabels.appendChild(label);
-}
+/* ====== GRID ====== */
+const startHour=8,endHour=17,timeLabels=document.getElementById("time-labels");
+for(let h=startHour;h<=endHour;h++){let l=document.createElement("div");l.className="time-label";l.textContent=`${h.toString().padStart(2,'0')}:00`;timeLabels.appendChild(l);}
+const days=["Mon","Tue","Wed","Thu","Fri"],dayColumns=document.getElementById("day-columns");
+days.forEach(d=>{let c=document.createElement("div");c.className="day-column";c.dataset.day=d;dayColumns.appendChild(c);});
 
-const days=["Mon","Tue","Wed","Thu","Fri"];
-const dayColumns = document.getElementById("day-columns");
-days.forEach(day=>{
-  const col = document.createElement("div");
-  col.className="day-column";
-  col.dataset.day=day;
-  dayColumns.appendChild(col);
-});
-
-/* ====== DRAG FROM LEFT PANEL ====== */
+/* ====== DRAG & DROP ====== */
 let draggedTask=null;
-document.querySelectorAll(".task").forEach(el=>{
-  el.addEventListener("dragstart", e=>{
-    draggedTask = el;
-  });
-});
-
-/* ====== DROP + MOVE + RESIZE ====== */
+document.querySelectorAll(".task").forEach(el=>{el.addEventListener("dragstart",()=>{draggedTask=el});});
 function makeTaskBlock(block){
-  let offsetX=0, offsetY=0;
-  let resizing=false;
-
-  block.addEventListener("mousedown", e=>{
-    const rect=block.getBoundingClientRect();
-    const edge=5; // px sensitive area for resizing
-    if(e.clientY - rect.top < edge || rect.bottom - e.clientY < edge){
-      resizing=true;
-      block.classList.add("resizing");
-    } else{
-      offsetX = e.clientX - rect.left;
-      offsetY = e.clientY - rect.top;
-      block.style.zIndex=1000;
-    }
-
+  let offsetX=0,offsetY=0,resizing=false;
+  block.addEventListener("mousedown",e=>{
+    const r=block.getBoundingClientRect(),edge=5;
+    if(e.clientY-r.top<edge||r.bottom-e.clientY<edge){resizing=true;block.classList.add("resizing");}
+    else{offsetX=e.clientX-r.left;offsetY=e.clientY-r.top;block.style.zIndex=1000;}
     function moveAt(e){
-      if(resizing){
-        const parent=block.parentElement;
-        let newHeight = e.clientY - parent.getBoundingClientRect().top - block.offsetTop;
-        newHeight=Math.max(20,newHeight);
-        block.style.height=newHeight+"px";
-      } else{
-        block.style.left = (e.clientX - offsetX - block.parentElement.getBoundingClientRect().left)+"px";
-        block.style.top = (e.clientY - offsetY - block.parentElement.getBoundingClientRect().top)+"px";
-      }
+      if(resizing){let newH=e.clientY-block.parentElement.getBoundingClientRect().top-block.offsetTop;newH=Math.max(20,newH);block.style.height=newH+"px";}
+      else{block.style.left=(e.clientX-offsetX-block.parentElement.getBoundingClientRect().left)+"px";block.style.top=(e.clientY-offsetY-block.parentElement.getBoundingClientRect().top)+"px";}
     }
-
-    function upHandler(){
-      resizing=false;
-      block.classList.remove("resizing");
-      document.removeEventListener("mousemove",moveAt);
-      document.removeEventListener("mouseup",upHandler);
-    }
-
-    document.addEventListener("mousemove",moveAt);
-    document.addEventListener("mouseup",upHandler);
-    e.preventDefault();
+    function upHandler(){resizing=false;block.classList.remove("resizing");document.removeEventListener("mousemove",moveAt);document.removeEventListener("mouseup",upHandler);}
+    document.addEventListener("mousemove",moveAt);document.addEventListener("mouseup",upHandler);e.preventDefault();
   });
 }
-
 document.querySelectorAll(".day-column").forEach(col=>{
   col.addEventListener("dragover",e=>e.preventDefault());
-  col.addEventListener("drop",e=>{
-    if(!draggedTask) return;
-    const block = document.createElement("div");
-    block.className="task-block";
-    block.textContent=draggedTask.textContent;
-    block.style.top="0px";
-    block.style.left="0px";
-    block.style.width="90%";
-    block.style.height="40px";
-    makeTaskBlock(block);
-    col.appendChild(block);
+  col.addEventListener("drop",()=>{if(!draggedTask)return;
+    const b=document.createElement("div");b.className="task-block";b.textContent=draggedTask.textContent;b.style.top="0px";b.style.left="0px";b.style.width="90%";b.style.height="40px";makeTaskBlock(b);col.appendChild(b);
   });
 });
+
+/* ====== ADD NEW TASK ====== */
+const newTaskInput=document.getElementById("new-task");
+newTaskInput.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&newTaskInput.value.trim()!==""){
+    const t=document.createElement("div");t.className="task";t.draggable=true;t.textContent=newTaskInput.value;
+    t.addEventListener("dragstart",()=>{draggedTask=t});
+    document.querySelector(".left-panel").appendChild(t);
+    newTaskInput.value="";
+  }
+});
+
+/* ====== TIMER ====== */
+let timerEl=document.getElementById("timer"),startStop=document.getElementById("start-stop"),resetBtn=document.getElementById("reset");
+let seconds=0,interval=null;
+startStop.addEventListener("click",()=>{
+  if(interval){clearInterval(interval);interval=null;startStop.textContent="Start";}
+  else{interval=setInterval(()=>{seconds++;let m=Math.floor(seconds/60),s=seconds%60;timerEl.textContent=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;},1000);startStop.textContent="Stop";}
+});
+resetBtn.addEventListener("click",()=>{clearInterval(interval);interval=null;seconds=0;timerEl.textContent="00:00";startStop.textContent="Start";});
 </script>
+
 </body>
 </html>
