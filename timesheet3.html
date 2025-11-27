@@ -111,12 +111,15 @@
 </head>
 <body>
 
-  <!-- ===== TOP MENU BAR ===== -->
-  <div class="topbar">
-    <button id="btnFees"><span>💲</span>Fees</button>
-    <button id="btnWriteoffs"><span>📝</span>Write-offs</button>
-    <button id="btnFeeSpy"><span>🔍</span>Fee Spy</button>
-  </div>
+  <!-- ===== TOP MENU BAR (from external file) ===== -->
+  <div id="topbar-container"></div>
+  <script>
+    fetch('topbar.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('topbar-container').innerHTML = data;
+      });
+  </script>
 
   <div class="container">
 
@@ -206,15 +209,7 @@
     };
 
     /* ===== BUTTON LINKS ===== */
-    document.getElementById('btnFees').onclick = function() {
-      window.location.href = "fees.html";
-    };
-    document.getElementById('btnWriteoffs').onclick = function() {
-      window.location.href = "writeoffs.html";
-    };
-    document.getElementById('btnFeeSpy').onclick = function() {
-      window.location.href = "feespy.html";
-    };
+    // These are still included in topbar.html, no changes here
   </script>
 
 </body>
