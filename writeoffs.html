@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Write-Offs</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fa; padding: 20px; }
+  
+  /* ===== TOPBAR ===== */
+  .topbar {
+    display: flex;
+    align-items: center;
+    background: #4fc3f7;
+    padding: 10px 20px;
+    color: #fff;
+    gap: 10px;
+  }
+  .topbar button {
+    background: #fff;
+    color: #00796b;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+  }
+  .topbar button:hover { background: #e0f2f1; }
+
+  /* ===== TABLE ===== */
+  table { border-collapse: collapse; width: 100%; margin-top: 20px; background: #fff; }
+  th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: center; }
+  th { background: #00796b; color: #fff; }
+  input[type="number"] { width: 80px; padding: 4px; text-align: right; }
+
+  /* ===== SUBMIT BUTTON ===== */
+  .submit-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #00796b;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .submit-btn:hover { background: #004d40; }
+</style>
+</head>
+<body>
+
+<!-- ===== TOPBAR ===== -->
+<div class="topbar">
+  <button onclick="window.location.href='timesheet3.html'">📝 Timesheet</button>
+  <button onclick="window.location.href='fees.html'">💰 Fees</button>
+  <button class="active">✏️ Write-Offs</button>
+</div>
+
+<h2>Client Write-Offs</h2>
+
+<table id="writeoffTable">
+  <tr>
+    <th>Client</th>
+    <th>Fee Amount ($)</th>
+    <th>Write-Off ($)</th>
+  </tr>
+  <!-- Dummy client rows -->
+  <tr><td>ACME Corp</td><td>12,500</td><td><input type="number" min="0" value="0"></td></tr>
+  <tr><td>Beta LLC</td><td>8,200</td><td><input type="number" min="0" value="0"></td></tr>
+  <tr><td>Gamma Inc</td><td>15,300</td><td><input type="number" min="0" value="0"></td></tr>
+  <tr><td>Delta Co</td><td>6,700</td><td><input type="number" min="0" value="0"></td></tr>
+  <tr><td>Epsilon Ltd</td><td>9,800</td><td><input type="number" min="0" value="0"></td></tr>
+  <tr><td>Zeta Partners</td><td>14,100</td><td><input type="number" min="0" value="0"></td></tr>
+  <tr><td>Eta Group</td><td>7,500</td><td><input type="number" min="0" value="0"></td></tr>
+  <tr><td>Theta Enterprises</td><td>11,200</td><td><input type="number" min="0" value="0"></td></tr>
+  <tr><td>Iota Solutions</td><td>5,900</td><td><input type="number" min="0" value="0"></td></tr>
+  <tr><td>Kappa Consulting</td><td>10,400</td><td><input type="number" min="0" value="0"></td></tr>
+</table>
+
+<button class="submit-btn" onclick="submitWriteOffs()">Submit Write-Offs</button>
+
+<script>
+function submitWriteOffs() {
+  const table = document.getElementById('writeoffTable');
+  const rows = table.querySelectorAll('tr');
+  const results = [];
+  
+  for (let i = 1; i < rows.length; i++) { // skip header
+    const client = rows[i].cells[0].textContent;
+    const fee = rows[i].cells[1].textContent;
+    const writeoff = rows[i].cells[2].querySelector('input').value;
+    
+    if (writeoff && writeoff != '0') {
+      results.push({ client, fee, writeoff });
+    }
+  }
+  
+  if (results.length === 0) {
+    alert("No write-offs entered.");
+  } else {
+    console.log("Write-Offs Submitted:", results);
+    alert("Write-offs submitted! Check console for details.");
+  }
+}
+</script>
+
+</body>
+</html>
