@@ -5,9 +5,39 @@
 <title>Timesheet Cost Summary</title>
 
 <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f7fa; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f7fa; margin: 0; }
     h2 { margin-top: 0; }
-    select { padding: 6px 10px; font-size: 14px; margin-bottom: 20px; }
+    
+    /* ===== TOPBAR ===== */
+    .topbar {
+      display: flex;
+      align-items: center;
+      background: #00796b;
+      padding: 10px 20px;
+      color: #fff;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .topbar button {
+      background: #fff;
+      color: #00796b;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+    }
+    .topbar button:hover { background: #e0f2f1; }
+    .topbar .active { background: #004d40; color: #fff; }
+
+    /* ===== CLIENT DROPDOWN ===== */
+    select { padding: 6px 10px; font-size: 14px; margin: 20px 0; }
+
+    /* ===== TABLE STYLES ===== */
     table { border-collapse: collapse; width: 100%; font-size: 13px; background: #fff; }
     th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: center; }
     th { background: #003366; color: white; }
@@ -18,6 +48,16 @@
 </head>
 
 <body>
+
+<!-- ===== TOPBAR ===== -->
+<div class="topbar">
+    <button onclick="window.location.href='timesheet3.html'">📝 Timesheet</button>
+    <button class="active">💰 Fees</button>
+    <button>📅 Calendar</button>
+    <button>🗒 Notes</button>
+    <button>🔍 Search</button>
+    <button>⚙️ Settings</button>
+</div>
 
 <h2>Timesheet – Weekly Cost Summary</h2>
 
@@ -33,16 +73,13 @@
     <tr>
         <th rowspan="2">Team Member</th>
         <th rowspan="2">Rate/Hr</th>
-
         <th colspan="2">Week 17 Oct 2025</th>
         <th colspan="2">Week 24 Oct 2025</th>
         <th colspan="2">Week 31 Oct 2025</th>
         <th colspan="2">Week 07 Nov 2025</th>
-
         <th rowspan="2">Total Hours</th>
         <th rowspan="2">Total Cost $</th>
     </tr>
-
     <tr>
         <th>Hours</th><th>Cost $</th>
         <th>Hours</th><th>Cost $</th>
