@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fees Spy</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fa; }
+
+  /* ===== TOP BAR ===== */
+  .topbar {
+    display: flex;
+    justify-content: center;
+    background: #add8e6; /* Light Blue */
+    padding: 10px 20px;
+    gap: 10px;
+  }
+  .topbar button {
+    background: #fff;
+    color: #00796b;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+  }
+  .topbar button:hover { background: #e0f2f1; }
+  .topbar .active { background: #00796b; color: #fff; }
+
+  /* ===== CONTAINERS ===== */
+  .container { margin: 30px; }
+
+  .card {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+  }
+
+  .card h3 { margin-top: 0; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 8px 16px;
+  }
+  .summary-grid div { padding: 4px 0; }
+
+  .workflow-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  .workflow-table th, .workflow-table td {
+    border: 1px solid #ddd;
+    padding: 6px 8px;
+    text-align: left;
+    font-size: 13px;
+  }
+  .workflow-table th { background: #003366; color: #fff; }
+
+  textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== TOP MENU BAR ===== -->
+<div class="topbar">
+  <button id="btnTimesheet">📝 Timesheet</button>
+  <button id="btnFees">💲 Fees</button>
+  <button id="btnWriteoffs">✏️ Write-offs</button>
+  <button class="active">🔍 Fees Spy</button>
+</div>
+
+<div class="container">
+
+  <!-- ===== INVOICE SUMMARY ===== -->
+  <div class="card">
+    <h3>Invoice Summary</h3>
+    <div class="summary-grid">
+      <div><strong>Invoice Number:</strong></div><div>256260</div>
+      <div><strong>Invoice Date:</strong></div><div>31/10/2025</div>
+      <div><strong>Debtor:</strong></div><div>IGNITION WEALTH LIMITED</div>
+      <div><strong>Address:</strong></div>
+      <div>
+        Mrs Kathryn Welsh<br>
+        Level 2, 5 Martin Place<br>
+        SYDNEY NSW 2000
+      </div>
+      <div><strong>Reference:</strong></div><div>Fee 256260</div>
+      <div><strong>Value:</strong></div><div>$7,332.00</div>
+      <div><strong>GST:</strong></div><div>$733.20</div>
+      <div><strong>Total:</strong></div><div>$8,065.20</div>
+      <div><strong>Balance:</strong></div><div>$0.00</div>
+    </div>
+  </div>
+
+  <!-- ===== NARRATION / NOTES ===== -->
+  <div class="card">
+    <h3>Narration / Notes</h3>
+    <textarea placeholder="Enter any notes or description here..."></textarea>
+  </div>
+
+  <!-- ===== WORKFLOW STEPS ===== -->
+  <div class="card">
+    <h3>Process Workflow</h3>
+    <table class="workflow-table">
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th>Start Date & Time</th>
+          <th>End Date & Time</th>
+          <th>Team/User</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Drafter</td>
+          <td>3/11/2025 11:43:33 AM</td>
+          <td>3/11/2025 11:53:31 AM</td>
+          <td>YANG Julia</td>
+        </tr>
+        <tr>
+          <td>Partner for Posting</td>
+          <td>3/11/2025 3:15:03 PM</td>
+          <td>3/11/2025 3:15:13 PM</td>
+          <td>VON LUCKEN Mariana</td>
+        </tr>
+        <tr>
+          <td>Secretary for Clearing</td>
+          <td>6/11/2025 4:19:56 AM</td>
+          <td>6/11/2025 4:19:56 AM</td>
+          <td>Dhana</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  document.getElementById('btnTimesheet').onclick = () => window.location.href = "timesheet3.html";
+  document.getElementById('btnFees').onclick = () => window.location.href = "fees.html";
+  document.getElementById('btnWriteoffs').onclick = () => window.location.href = "writeoffs.html";
+</script>
+
+</body>
+</html>
