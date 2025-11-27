@@ -93,8 +93,9 @@
       font-weight: bold;
       color: #000;
     }
+    /* ===== TASK BLOCKS ===== */
     .task-block {
-      background: #66ccff;
+      background: #fff; /* White background regardless of yellow grid */
       color: #000;
       border-radius: 4px;
       padding: 2px 6px;
@@ -103,6 +104,8 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       position: absolute;
       left: 4px; right: 4px; top: 4px; bottom: 4px;
+      z-index: 2; /* stay above yellow cell */
+      border: 1px solid #b2dfdb; /* optional sticky note look */
     }
   </style>
 </head>
@@ -112,6 +115,7 @@
   <div class="topbar">
     <button id="btnFees"><span>💲</span>Fees</button>
     <button id="btnWriteoffs"><span>📝</span>Write-offs</button>
+    <button id="btnFeeSpy"><span>🔍</span>Fee Spy</button>
   </div>
 
   <div class="container">
@@ -201,14 +205,15 @@
       });
     };
 
-    /* ===== FEES BUTTON LINK ===== */
+    /* ===== BUTTON LINKS ===== */
     document.getElementById('btnFees').onclick = function() {
       window.location.href = "fees.html";
     };
-
-    /* ===== WRITE-OFFS BUTTON LINK ===== */
     document.getElementById('btnWriteoffs').onclick = function() {
       window.location.href = "writeoffs.html";
+    };
+    document.getElementById('btnFeeSpy').onclick = function() {
+      window.location.href = "feespy.html";
     };
   </script>
 
