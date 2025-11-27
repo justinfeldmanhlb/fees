@@ -2,27 +2,39 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Flexible Timesheet with Timer</title>
+<title>Corner Timesheet UI</title>
 <style>
-body{margin:0;padding:0;font-family:Arial;display:flex;height:100vh;background:#eef3f7;}
-.left-panel{width:260px;background:#fff;border-right:1px solid #ccc;padding:10px;display:flex;flex-direction:column;}
-.left-panel input{padding:6px;margin-bottom:8px;}
-.task{background:#ffe58a;border:1px solid #d4b200;padding:8px;margin-bottom:8px;border-radius:4px;cursor:grab;}
+body{margin:0;padding:0;font-family:Arial;height:100vh;background:#eef3f7;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px;}
+
+/* TOP LEFT - TASKS */
+#top-left{background:#fff;border:1px solid #ccc;padding:10px;display:flex;flex-direction:column;}
+#top-left input{padding:6px;margin-bottom:8px;}
+.task{background:#ffe58a;border:1px solid #d4b200;padding:6px;margin-bottom:6px;border-radius:4px;cursor:grab;}
 .task.dragging{opacity:0.6;}
-.right-panel{flex:1;position:relative;background:#cce5ff;overflow:auto;padding:20px;}
-.time-labels{position:absolute;left:0;top:0;width:60px;}
-.time-label{height:40px;line-height:40px;text-align:right;padding-right:10px;font-size:12px;color:#333;border-bottom:1px solid #aaa;}
-.day-columns{margin-left:60px;display:grid;grid-template-columns: repeat(5,1fr);gap:2px;}
-.day-column{position:relative;background:#f0f8ff;border:1px solid #bbb;min-height:400px;}
+
+/* TOP RIGHT - FEE & LOCK */
+#top-right{background:#d9edf7;border:1px solid #006dce;padding:10px;display:flex;align-items:center;justify-content:space-between;}
+#top-right button{margin-left:6px;}
+
+/* BOTTOM LEFT - TIMER */
+#bottom-left{background:#fff8c4;border:1px solid #d4b200;padding:10px;display:flex;align-items:center;justify-content:space-between;}
+#bottom-left button{margin-left:4px;}
+
+/* BOTTOM RIGHT - GRID */
+#bottom-right{background:#cce5ff;border:1px solid #bbb;position:relative;overflow:auto;padding:10px;}
+.time-labels{position:absolute;left:0;top:0;width:50px;}
+.time-label{height:40px;line-height:40px;text-align:right;padding-right:5px;font-size:12px;border-bottom:1px solid #aaa;color:#333;}
+.day-columns{margin-left:50px;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;}
+.day-column{position:relative;background:#f0f8ff;border:1px solid #bbb;min-height:300px;}
 .task-block{position:absolute;background:#9ecbff;border:1px solid #006dce;border-radius:4px;padding:2px 4px;font-size:12px;cursor:move;box-sizing:border-box;}
 .task-block.resizing{cursor:n-resize;}
-#timer-container{position:absolute;bottom:10px;left:10px;background:#fff8c4;padding:8px;border:1px solid #d4b200;border-radius:4px;}
-#timer-container button{margin-left:4px;}
+.task-block.locked{background:#b3d9ff;border:1px solid #004d99;cursor:not-allowed;}
 </style>
 </head>
 <body>
 
-<div class="left-panel">
+<!-- TOP LEFT -->
+<div id="top-left">
   <h3>Tasks</h3>
   <input type="text" id="new-task" placeholder="New Task + Enter"/>
   <div class="task" draggable="true">Emails – 20 min</div>
@@ -30,29 +42,44 @@ body{margin:0;padding:0;font-family:Arial;display:flex;height:100vh;background:#
   <div class="task" draggable="true">Client Call – 30 min</div>
 </div>
 
-<div class="right-panel">
-  <div class="time-labels" id="time-labels"></div>
-  <div class="day-columns" id="day-columns"></div>
-  <div id="timer-container">
-    <span id="timer">00:00</span>
+<!-- TOP RIGHT -->
+<div id="top-right">
+  <span>Post Fee / Lock</span>
+  <div>
+    <button id="lock-toggle">Lock</button>
+    <button id="post-fee">Post Fee</button>
+  </div>
+</div>
+
+<!-- BOTTOM LEFT -->
+<div id="bottom-left">
+  <span id="timer">00:00</span>
+  <div>
     <button id="start-stop">Start</button>
     <button id="reset">Reset</button>
   </div>
 </div>
 
+<!-- BOTTOM RIGHT -->
+<div id="bottom-right">
+  <div class="time-labels" id="time-labels"></div>
+  <div class="day-columns" id="day-columns"></div>
+</div>
+
 <script>
-/* ====== GRID ====== */
+/* ===== GRID ===== */
 const startHour=8,endHour=17,timeLabels=document.getElementById("time-labels");
 for(let h=startHour;h<=endHour;h++){let l=document.createElement("div");l.className="time-label";l.textContent=`${h.toString().padStart(2,'0')}:00`;timeLabels.appendChild(l);}
 const days=["Mon","Tue","Wed","Thu","Fri"],dayColumns=document.getElementById("day-columns");
 days.forEach(d=>{let c=document.createElement("div");c.className="day-column";c.dataset.day=d;dayColumns.appendChild(c);});
 
-/* ====== DRAG & DROP ====== */
-let draggedTask=null;
+/* ===== DRAG & RESIZE ===== */
+let draggedTask=null,locked=false;
 document.querySelectorAll(".task").forEach(el=>{el.addEventListener("dragstart",()=>{draggedTask=el});});
 function makeTaskBlock(block){
   let offsetX=0,offsetY=0,resizing=false;
   block.addEventListener("mousedown",e=>{
+    if(locked) return;
     const r=block.getBoundingClientRect(),edge=5;
     if(e.clientY-r.top<edge||r.bottom-e.clientY<edge){resizing=true;block.classList.add("resizing");}
     else{offsetX=e.clientX-r.left;offsetY=e.clientY-r.top;block.style.zIndex=1000;}
@@ -71,18 +98,17 @@ document.querySelectorAll(".day-column").forEach(col=>{
   });
 });
 
-/* ====== ADD NEW TASK ====== */
+/* ===== NEW TASK INPUT ===== */
 const newTaskInput=document.getElementById("new-task");
 newTaskInput.addEventListener("keydown",e=>{
   if(e.key==="Enter"&&newTaskInput.value.trim()!==""){
     const t=document.createElement("div");t.className="task";t.draggable=true;t.textContent=newTaskInput.value;
     t.addEventListener("dragstart",()=>{draggedTask=t});
-    document.querySelector(".left-panel").appendChild(t);
-    newTaskInput.value="";
+    document.getElementById("top-left").appendChild(t); newTaskInput.value="";
   }
 });
 
-/* ====== TIMER ====== */
+/* ===== TIMER ===== */
 let timerEl=document.getElementById("timer"),startStop=document.getElementById("start-stop"),resetBtn=document.getElementById("reset");
 let seconds=0,interval=null;
 startStop.addEventListener("click",()=>{
@@ -90,7 +116,15 @@ startStop.addEventListener("click",()=>{
   else{interval=setInterval(()=>{seconds++;let m=Math.floor(seconds/60),s=seconds%60;timerEl.textContent=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;},1000);startStop.textContent="Stop";}
 });
 resetBtn.addEventListener("click",()=>{clearInterval(interval);interval=null;seconds=0;timerEl.textContent="00:00";startStop.textContent="Start";});
-</script>
 
+/* ===== LOCK / POST FEE ===== */
+const lockBtn=document.getElementById("lock-toggle"),postBtn=document.getElementById("post-fee");
+lockBtn.addEventListener("click",()=>{
+  locked=!locked;
+  document.querySelectorAll(".task-block").forEach(b=>b.classList.toggle("locked",locked));
+  lockBtn.textContent=locked?"Unlock":"Lock";
+});
+postBtn.addEventListener("click",()=>{alert("Fee Posted!");});
+</script>
 </body>
 </html>
