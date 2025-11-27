@@ -9,7 +9,7 @@
     /* ===== TOP BAR ===== */
     .topbar {
       display: flex;
-      align-items: center;
+      justify-content: center;
       background: #00796b;
       padding: 10px 20px;
       color: #fff;
@@ -21,7 +21,6 @@
       border: none;
       border-radius: 6px;
       padding: 8px 14px;
-      margin-right: 8px;
       font-size: 16px;
       cursor: pointer;
       display: flex;
@@ -40,7 +39,11 @@
       border-radius: 8px;
       padding: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
+    .buckets-container { margin-bottom: 10px; }
     .bucket {
       background: #fff;
       border: 1px solid #b2dfdb;
@@ -50,6 +53,17 @@
       cursor: grab;
       box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
+    .teams-btn {
+      background: #66ccff;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .teams-btn:hover { background: #4db8ff; }
 
     .right-panel {
       flex: 1;
@@ -97,29 +111,26 @@
 
   <!-- ===== TOP MENU BAR ===== -->
   <div class="topbar">
-    <button id="btnTeams"><span>💼</span>Teams Pre-Fill</button>
-    <button><span>📅</span>Calendar</button>
-    <button><span>📝</span>Notes</button>
-    <button><span>🔍</span>Search</button>
     <button id="btnFees"><span>💲</span>Fees</button>
-    <button><span>⚙️</span>Settings</button>
+    <button id="btnWriteoffs"><span>📝</span>Write-offs</button>
   </div>
 
   <div class="container">
 
     <!-- ===== LEFT PANEL ===== -->
     <div class="left-panel">
-      <h3>Suggested Buckets</h3>
-
-      <div class="bucket" draggable="true">🧑‍💼 Client Meetings – 45 min</div>
-      <div class="bucket" draggable="true">💻 Tax Work – 45 min</div>
-      <div class="bucket" draggable="true">✉️ Email – 20 min</div>
+      <div class="buckets-container">
+        <h3>Suggested Buckets</h3>
+        <div class="bucket" draggable="true">🧑‍💼 Client Meetings – 45 min</div>
+        <div class="bucket" draggable="true">💻 Tax Work – 45 min</div>
+        <div class="bucket" draggable="true">✉️ Email – 20 min</div>
+      </div>
+      <button class="teams-btn" id="btnTeams">💼 Teams Pre-Fill</button>
     </div>
 
     <!-- ===== RIGHT PANEL ===== -->
     <div class="right-panel">
       <h3>Timesheet Grid</h3>
-
       <div class="timesheet" id="timesheet">
         <div class="header"></div>
         <div class="header">Mon</div>
@@ -135,7 +146,6 @@
   <script>
     /* ===== BUILD TIMESHEET SLOTS ===== */
     const timesheet = document.getElementById('timesheet');
-
     for (let hour = 8; hour < 18; hour++) {
       const timeLabel = document.createElement('div');
       timeLabel.textContent = `${hour}:00`;
@@ -145,7 +155,6 @@
         const slot = document.createElement('div');
         slot.dataset.hour = hour;
         slot.dataset.day = day;
-
         slot.ondragover = e => e.preventDefault();
         slot.ondrop = function(e) {
           e.preventDefault();
@@ -157,7 +166,6 @@
             slot.appendChild(block);
           }
         };
-
         timesheet.appendChild(slot);
       }
     }
@@ -178,13 +186,11 @@
         { day: 3, start: 11, duration: 1, desc: '✉️ Emails to Client' },
         { day: 4, start: 15, duration: 1, desc: '📅 Project Update' }
       ];
-
       demoTasks.forEach(t => {
         for (let d = 0; d < t.duration; d++) {
           const slot = [...timesheet.children].find(
-            div =>
-              parseInt(div.dataset.hour) === t.start + d &&
-              parseInt(div.dataset.day) === t.day
+            div => parseInt(div.dataset.hour) === t.start + d &&
+                   parseInt(div.dataset.day) === t.day
           );
           if (slot) {
             const block = document.createElement('div');
@@ -199,6 +205,11 @@
     /* ===== FEES BUTTON LINK ===== */
     document.getElementById('btnFees').onclick = function() {
       window.location.href = "fees.html";
+    };
+
+    /* ===== WRITE-OFFS BUTTON LINK ===== */
+    document.getElementById('btnWriteoffs').onclick = function() {
+      window.location.href = "writeoffs.html";
     };
   </script>
 
